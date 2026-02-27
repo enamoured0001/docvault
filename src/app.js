@@ -15,4 +15,14 @@ app.use(exprees.static("public"));
 app.use(cookieParser());
 
 
+
+
+// Importing routes
+import userRouter from "./routers/user.router.js";
+
+
+// Using routes
+app.use("/api/v1/users", userRouter);
+
+
  export default app;
