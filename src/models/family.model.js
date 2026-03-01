@@ -5,10 +5,20 @@ const familySchema = new Schema({
         type: String,
         required: true, 
     },
-    members: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User'
-    }],
+    members: [
+   {
+      user: {
+         type: mongoose.Schema.Types.ObjectId,
+         ref: "User"
+      },
+      role: {
+         type: String,
+         enum: ["admin", "member"],
+         default: "member"
+      }
+   }
+],
+
     createdby:{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',

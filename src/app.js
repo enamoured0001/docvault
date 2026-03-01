@@ -19,10 +19,12 @@ app.use(cookieParser());
 
 // Importing routes
 import userRouter from "./routers/user.router.js";
+import familyRouter from "./routers/family.router.js";
 
 
 // Using routes
 app.use("/api/v1/users", userRouter);
+app.use("/api/v1/families", familyRouter);
 
 
  export default app;
