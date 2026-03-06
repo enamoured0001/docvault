@@ -1,28 +1,47 @@
-import mongoose, {Schema} from 'mongoose';
+import mongoose, { Schema } from "mongoose";
 
 const documentSchema = new Schema(
-    {
-        title: {
-            type: String,
-            required: true,     
-        },
-        content: {
-            type: String,   
-            required: true,
-        },
-        uploadedBy: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'User',    
-            required: true
-        },
-        uploadedfile: [{
-            type: String,
-            enum: ['pdf', 'image']   
-        }],
-        
+  {
+    title: {
+      type: String,
+      required: true,
     },
-    { timestamps: true}
-)
 
+    fileUrl: {
+      type: String,
+      required: true,
+    },
 
-export const Document = mongoose.model('Document', documentSchema);
+    publicId: {        // cloudinary delete ke liye
+      type: String,
+      required: true,
+    },
+
+    fileType: {
+      type: String,
+      enum: ["pdf", "image"],
+      required: true,
+    },
+
+    uploadedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+
+    member: {          // jis member ka document hai
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+
+    family: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Family",
+      required: true,
+    },
+  },
+  { timestamps: true }
+);
+
+export const Document = mongoose.model("Document", documentSchema);
