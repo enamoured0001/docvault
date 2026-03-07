@@ -1,7 +1,7 @@
 import jwtverify from "../middlewares/auth.middleware.js";
 import isAdmin from "../middlewares/isadmin.middlware.js";
 import { Router  } from "express";
-import { uploadDocument } from "../controllers/document.controllers.js";
+import { uploadDocument,getDocumentsByMember,removeDocument } from "../controllers/document.controllers.js";
 import { upload } from "../middlewares/multer.middlewares.js";  
 
 const route = Router();

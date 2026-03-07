@@ -29,4 +29,4 @@ app.use("/api/v1/families", familyRouter);
 app.use("/api/v1/documents", documentRouter);
 
 
- export default app;
+export default app;
