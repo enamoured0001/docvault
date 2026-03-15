@@ -28,10 +28,18 @@ import {User} from "../models/user.model.js";
 
     const getMyFamily = asyncHandler(async(req,res)=>{
         const family = await Family.findOne({ "members.user": req.user._id }).populate("members.user", "username email avatar");
-        if(!family){
-            throw new ApiError(404, "Family not found");
-        }
-        return res.status(200).json(apiResponse(res, 200, "Family retrieved successfully", family));
+   if(!family){
+      return res.status(200).json(
+         apiResponse(res, 200, "No family found", { hasFamily:false })
+      );
+   }
+
+   return res.status(200).json(
+      apiResponse(res, 200, "Family retrieved successfully", {
+         hasFamily:true,
+         family
+      })
+    );
     });
 
 

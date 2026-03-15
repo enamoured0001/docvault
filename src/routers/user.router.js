@@ -20,6 +20,6 @@ route.route ("/register").post(
 route.route ("/login").post(loginuser);
 route.route("/logout").post(jwtverify, logoutuser);
 route.route("/refresh").post(updatedrefreshtoken);
-route.route("/me").post(jwtverify, getCurrentuser);
+route.route("/me").get(jwtverify, getCurrentuser);
 
  export default route;
