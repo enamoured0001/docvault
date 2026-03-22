@@ -1,5 +1,5 @@
 import { Router  } from "express";
-import { registeruser,loginuser,logoutuser, updatedrefreshtoken, getCurrentuser } from "../controllers/user.controllers.js";
+import { registeruser,loginuser,logoutuser, updatedrefreshtoken, getCurrentuser, updateCurrentuser } from "../controllers/user.controllers.js";
 import {upload} from "../middlewares/multer.middlewares.js";
 import jwtverify from "../middlewares/auth.middleware.js";
 
@@ -20,6 +20,15 @@ route.route ("/register").post(
 route.route ("/login").post(loginuser);
 route.route("/logout").post(jwtverify, logoutuser);
 route.route("/refresh").post(updatedrefreshtoken);
-route.route("/me").get(jwtverify, getCurrentuser);
+route.route("/me").get(jwtverify, getCurrentuser).patch(
+    jwtverify,
+    upload.fields([
+        {
+            name: "avatar",
+            maxCount: 1
+        }
+    ]),
+    updateCurrentuser
+);
 
  export default route;

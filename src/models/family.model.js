@@ -5,6 +5,11 @@ const familySchema = new Schema({
         type: String,
         required: true, 
     },
+    inviteCode: {
+        type: String,
+        required: true,
+        unique: true
+    },
     members: [
    {
       user: {

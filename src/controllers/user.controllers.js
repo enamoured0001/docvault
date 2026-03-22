@@ -5,6 +5,28 @@ import { uploadonCloudinary } from "../utils/cloudinary.js";
 import apiResponse from "../utils/apiresponse.js";
  import jwt from "jsonwebtoken";
 
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/;
+const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d).{6,}$/;
+
+const validateEmail = (email) => {
+    if (!emailRegex.test(email)) {
+        throw new ApiError(400, "Enter a valid email address");
+    }
+};
+
+const validateUsername = (username) => {
+    if (!usernameRegex.test(username)) {
+        throw new ApiError(400, "Username must be 3-20 characters and only use letters, numbers, or underscore");
+    }
+};
+
+const validatePassword = (password) => {
+    if (!passwordRegex.test(password)) {
+        throw new ApiError(400, "Password must be at least 6 characters and include at least one letter and one number");
+    }
+};
+
 
 
 
@@ -28,12 +50,12 @@ const generatetokens = async(userid) => {
 
 // Example controller function to get user profile
 const registeruser = asyncHandler(async (req, res) => {
-    const { username, email, password,role } = req.body;
-    console.log("Received data:", { username, email, password, role });
+    const { username, email, password } = req.body;
+    console.log("Received data:", { username, email, password });
 
         // Validate input
         if(
-            [username,email,password,role].some((field) =>!field || field?.trim() === "")
+            [username,email,password].some((field) =>!field || field?.trim() === "")
         )
         {
            
@@ -41,8 +63,15 @@ const registeruser = asyncHandler(async (req, res) => {
 
         }
 
+    const normalizedUsername = username.trim().toLowerCase();
+    const normalizedEmail = email.trim().toLowerCase();
+
+    validateUsername(normalizedUsername);
+    validateEmail(normalizedEmail);
+    validatePassword(password);
+
     // Check if user already exists
-    const existeduser = await User.findOne({$or: [{ email }, { username }]});
+    const existeduser = await User.findOne({$or: [{ email: normalizedEmail }, { username: normalizedUsername }]});
     if(existeduser){
         throw new ApiError(409, "User with this email or username already exists");
     }
@@ -62,10 +91,9 @@ const registeruser = asyncHandler(async (req, res) => {
 
     // Create new user
     const newuser = await User.create({
-        username,
-        email,
+        username: normalizedUsername,
+        email: normalizedEmail,
         password,
-        role,
         avatar: avatar.url
     });
 
@@ -87,7 +115,10 @@ const loginuser = asyncHandler(async (req, res) => {
     if(!email || !password){
         throw new ApiError(400, "Email and password are required");
     }
-    const user = await User.findOne({ email });
+    const normalizedEmail = email.trim().toLowerCase();
+    validateEmail(normalizedEmail);
+    validatePassword(password);
+    const user = await User.findOne({ email: normalizedEmail });
     if(!user){
         throw new ApiError(404, "User not found");
     }
@@ -132,7 +163,7 @@ const logoutuser = asyncHandler(async (req, res) => {
         httponly: true,
         secure: true,
     };
-    res.clearCookie("accesstoken", options); 
+    res.clearCookie("accessToken", options); 
     res.clearCookie("refreshToken", options);
     return res.status(200).json(
         apiResponse(res, 200, "User logged out successfully")
@@ -179,7 +210,60 @@ const updatedrefreshtoken= asyncHandler(async(req,res)=>{
 const getCurrentuser = asyncHandler(async(req,res)=>{
     
     return res.status(200).json(
-       apiResponse(res, 200, "User profile retrieved successfully", {user: req.user})
+       apiResponse(res, 200, "User profile retrieved successfully", req.user)
+    );
+});
+
+const updateCurrentuser = asyncHandler(async (req, res) => {
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+        throw new ApiError(404, "User not found");
+    }
+
+    const { username, email } = req.body;
+
+    if (username && username.trim()) {
+        validateUsername(username.trim());
+        const existingUsername = await User.findOne({
+            username: username.trim().toLowerCase(),
+            _id: { $ne: user._id }
+        });
+
+        if (existingUsername) {
+            throw new ApiError(409, "Username already exists");
+        }
+
+        user.username = username.trim().toLowerCase();
+    }
+
+    if (email && email.trim()) {
+        validateEmail(email.trim().toLowerCase());
+        const existingEmail = await User.findOne({
+            email: email.trim().toLowerCase(),
+            _id: { $ne: user._id }
+        });
+
+        if (existingEmail) {
+            throw new ApiError(409, "Email already exists");
+        }
+
+        user.email = email.trim().toLowerCase();
+    }
+
+    const localavatarpath = req.files?.avatar?.[0]?.path;
+
+    if (localavatarpath) {
+        const avatar = await uploadonCloudinary(localavatarpath);
+        user.avatar = avatar.url;
+    }
+
+    await user.save({ validateBeforeSave: false });
+
+    const updatedUser = await User.findById(user._id).select("-password -refreshToken");
+
+    return res.status(200).json(
+        apiResponse(res, 200, "User updated successfully", updatedUser)
     );
 });
 
@@ -187,4 +271,4 @@ const getCurrentuser = asyncHandler(async(req,res)=>{
 
 
 
-export { registeruser, loginuser, logoutuser,updatedrefreshtoken,getCurrentuser};
+export { registeruser, loginuser, logoutuser,updatedrefreshtoken,getCurrentuser, updateCurrentuser};

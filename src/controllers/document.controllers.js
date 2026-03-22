@@ -2,14 +2,15 @@ import asyncHandler from "../utils/asynchandler.js";
 import ApiError from "../utils/apierror.js";
 import {Family} from "../models/family.model.js";
 import apiResponse from "../utils/apiresponse.js";
-import {User} from "../models/user.model.js";
 import {Document} from "../models/document.model.js";
+import { uploadonCloudinary } from "../utils/cloudinary.js";
+import cloudinary from "cloudinary";
 
 
 const uploadDocument = asyncHandler(async(req,res)=>{
 
     const {title} = req.body;
-    const memeberid = req.params;
+    const memeberid = req.params.memberid;
 
     if (!title) {
         throw new ApiError(400, "Title is required and cannot be empty");
@@ -59,7 +60,7 @@ const uploadDocument = asyncHandler(async(req,res)=>{
         family: family._id,
     });
 
-    return res.status(201).json(apiResponse(res, 201, "Document uploaded successfully", document));
+    return apiResponse(res, 201, "Document uploaded successfully", document);
 });
 
 const getDocumentsByMember = asyncHandler(async(req,res)=>{
@@ -75,7 +76,7 @@ const getDocumentsByMember = asyncHandler(async(req,res)=>{
         throw new ApiError(404, "Member not found in the family");
     }   
     const documents = await Document.find({ member: memeberid, family: family._id });
-    return res.status(200).json(apiResponse(res, 200, "Documents retrieved successfully", documents));
+    return apiResponse(res, 200, "Documents retrieved successfully", documents);
 });
 
 
@@ -96,17 +97,17 @@ const removeDocument = asyncHandler(async(req,res)=>{
         throw new ApiError(404, "Member not found in the family");
     }   
 
-    if 
-    (
-        member.role !== "admin" && document.uploadedBy.toString() !== req.user._id.toString()
-     )
-    {
+    const member = family.members.find(m => m.user.toString() === req.user._id.toString());
+
+    if (
+        member?.role !== "admin" && document.uploadedBy.toString() !== req.user._id.toString()
+    ) {
         throw new ApiError(403, "You do not have permission to delete this document");
         
     }
-    await cloudinary.uploader.destroy(document.publicId);
-    await document.findByIdAndDelete(documentid);
-    return res.status(200).json(apiResponse(res, 200, "Document removed successfully"));
+    await cloudinary.v2.uploader.destroy(document.publicId);
+    await Document.findByIdAndDelete(documentid);
+    return apiResponse(res, 200, "Document removed successfully");
 }
 );
 
