@@ -132,9 +132,12 @@ const loginuser = asyncHandler(async (req, res) => {
     const loggedinuser= await User.findById(user._id).select("-password -refreshToken");
 
 
-    const options = {
-        httponly: true,
-        secure: true,};
+  const options = {
+  httpOnly: true,
+  secure: true,
+  sameSite: "none",
+};
+
 
      return res.status(200)
      .cookie("accessToken", accesstoken, options)
