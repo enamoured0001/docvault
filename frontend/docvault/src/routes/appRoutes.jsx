@@ -3,9 +3,11 @@ import Login from "../page/login";
 import Dashboard from "../page/dashboard";
 import CreateFamily from "../page/createfamily";
 import AddMember from "../page/Addmember";
-import Register from "../page/register";
+
 import Home from "../page/Home";
-import MemberDocuments from "../page/memberdocuments";
+import Register from "../page/Register";
+import MemberDocuments from "../page/MemberDocuments";
+
 import Profile from "../page/Profile";
 import ProtectedRoute from "./ProtectedRoute";
 
