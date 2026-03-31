@@ -140,7 +140,7 @@ function Profile() {
               Your account
             </h1>
             <p className="mt-3 text-slate-600">
-              Apni details update karo aur account ko yahin se manage karo.
+              Update your details and manage your account from here.
             </p>
 
             <div className="mt-8 flex flex-col items-center rounded-[28px] bg-slate-50 p-6 text-center">
@@ -175,7 +175,7 @@ function Profile() {
           <section className="rounded-[34px] border border-slate-200 bg-white p-8 shadow-[0_18px_50px_rgba(15,23,42,0.08)]">
             <h2 className="text-2xl font-bold text-slate-900">Edit Details</h2>
             <p className="mt-2 text-sm text-slate-500">
-              Username, email aur avatar ko update karke profile fresh rakho.
+              Keep your profile up to date by editing your username, email, and avatar.
             </p>
 
             <form onSubmit={handleSave} className="mt-8 space-y-5">

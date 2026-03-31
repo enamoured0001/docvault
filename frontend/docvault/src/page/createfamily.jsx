@@ -90,7 +90,7 @@ function CreateFamily() {
             </p>
             <h2 className="mt-3 text-3xl font-bold text-slate-900">Start your own family vault</h2>
             <p className="mt-3 text-slate-600">
-              Nayi family workspace banao aur uske baad members ko invite code se join karvao.
+              Create a new family workspace and invite members with a shareable code.
             </p>
 
             <div className="mt-8 space-y-4">
@@ -117,7 +117,7 @@ function CreateFamily() {
             </p>
             <h2 className="mt-3 text-3xl font-bold text-slate-900">Already have an invite code?</h2>
             <p className="mt-3 text-slate-600">
-              Admin se mila hua family invite code daal kar directly family join karein.
+              Enter the family invite code provided by an admin to join directly.
             </p>
 
             <div className="mt-8 space-y-4">

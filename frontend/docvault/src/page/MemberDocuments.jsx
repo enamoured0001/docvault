@@ -209,7 +209,7 @@ function MemberDocuments() {
                 No documents uploaded yet
               </h3>
               <p className="mt-2 text-slate-500">
-                Upload Document par click karke first file add karo.
+                Click Upload Document to add your first file.
               </p>
             </div>
 

@@ -97,7 +97,7 @@ function Register() {
               Start your secure document vault.
             </h1>
             <p className="mt-4 max-w-xl text-base leading-7 text-blue-100">
-              Family documents ko organize, access aur manage karne ke liye apna account create karein.
+              Create your account to organize, access, and manage family documents securely.
             </p>
 
             <div className="mt-8 grid gap-4 sm:grid-cols-2">
@@ -115,7 +115,7 @@ function Register() {
           <div className="rounded-[34px] border border-slate-200 bg-white p-8 shadow-[0_18px_50px_rgba(15,23,42,0.08)]">
             <h2 className="text-2xl font-bold text-slate-900">Register</h2>
             <p className="mt-2 text-sm text-slate-500">
-              Register karein. Family create karoge to admin banoge, join karoge to member.
+              Create your account to start a family vault or join one with an invite code.
             </p>
 
             <div className="mt-8 space-y-4">
@@ -164,11 +164,15 @@ function Register() {
               </div>
 
               <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-4 py-3">
+                <p className="mb-3 text-sm font-medium text-slate-700">Upload Avatar</p>
                 <input
                   type="file"
                   className="w-full text-sm text-slate-600 file:mr-4 file:rounded-full file:border-0 file:bg-blue-100 file:px-4 file:py-2 file:font-medium file:text-blue-700 hover:file:bg-blue-200"
                   onChange={(e) => setAvatar(e.target.files[0])}
                 />
+                <p className="mt-3 text-xs text-slate-500">
+                  Choose a profile image to use as your avatar.
+                </p>
               </div>
               {errors.avatar && <p className="text-sm text-rose-600">{errors.avatar}</p>}
               {errors.form && <p className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-600">{errors.form}</p>}

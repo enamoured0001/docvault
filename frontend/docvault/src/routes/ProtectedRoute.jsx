@@ -27,7 +27,7 @@ function ProtectedRoute({ children }) {
           </div>
           <h2 className="mt-5 text-2xl font-bold text-slate-900">Preparing your workspace</h2>
           <p className="mt-2 text-sm text-slate-500">
-            Documents aur account access verify kiya ja raha hai.
+            Verifying your documents and account access.
           </p>
           <div className="mt-6 h-2 overflow-hidden rounded-full bg-slate-200">
             <div className="h-full w-1/2 animate-pulse rounded-full bg-blue-600" />

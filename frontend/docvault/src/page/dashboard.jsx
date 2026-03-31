@@ -122,7 +122,7 @@ function Dashboard() {
                 Welcome to {family?.name}
               </h1>
               <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600">
-                {user?.username}, family members aur unke documents ko ek clean dashboard se manage karo.
+                {user?.username}, manage your family members and their documents from one clean dashboard.
               </p>
             </div>
 
@@ -199,7 +199,7 @@ function Dashboard() {
                     Invite Member
                   </p>
                   <p className="mt-2 text-sm text-slate-600">
-                    New member ko join karwane ke liye invite code open karein.
+                    Open the invite code to help a new member join your family.
                   </p>
                 </div>
 
@@ -222,7 +222,7 @@ function Dashboard() {
                         {family.inviteCode}
                       </p>
                       <p className="mt-2 text-sm text-slate-600">
-                        Is code ko share karke new member ko family join karvao.
+                        Share this code with a new member so they can join the family.
                       </p>
                     </div>
 

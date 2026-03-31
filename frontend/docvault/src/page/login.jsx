@@ -74,7 +74,7 @@ function Login() {
                 Login to your family document workspace.
               </h1>
               <p className="mt-5 text-base leading-7 text-blue-50/90">
-                Important files, member access, aur family records ko ek hi secure dashboard se handle karein.
+                Manage important files, member access, and family records from one secure dashboard.
               </p>
             </div>
 
@@ -97,7 +97,7 @@ function Login() {
           <section className="rounded-[36px] border border-slate-200 bg-white/90 p-8 shadow-[0_18px_60px_rgba(15,23,42,0.08)] backdrop-blur">
             <h2 className="text-3xl font-bold text-slate-900">Login</h2>
             <p className="mt-2 text-sm text-slate-500">
-              Account access ke liye apni credentials enter karein.
+              Enter your credentials to access your account.
             </p>
 
             <div className="mt-8 space-y-5">

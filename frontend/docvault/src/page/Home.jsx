@@ -28,7 +28,7 @@ function Home() {
               </h1>
 
               <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-600">
-                Aadhaar, PAN, certificates, insurance files aur family records ko beautifully organized, instantly accessible aur securely shared rakho.
+                Keep identity cards, certificates, insurance files, and family records beautifully organized, instantly accessible, and securely shared.
               </p>
 
               <div className="mt-8 flex flex-wrap gap-4">
@@ -129,17 +129,17 @@ function Home() {
             <div className="rounded-[28px] bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
               <p className="text-sm font-semibold uppercase tracking-[0.24em] text-blue-600">Secure Access</p>
               <h3 className="mt-3 text-2xl font-bold">Protected storage</h3>
-              <p className="mt-3 text-slate-600">Important documents ko clean interface ke saath safe cloud access milega.</p>
+              <p className="mt-3 text-slate-600">Store important documents safely with a clean and reliable cloud experience.</p>
             </div>
             <div className="rounded-[28px] bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
               <p className="text-sm font-semibold uppercase tracking-[0.24em] text-blue-600">Family Roles</p>
               <h3 className="mt-3 text-2xl font-bold">Admin control</h3>
-              <p className="mt-3 text-slate-600">Admins members ko add ya remove kar sakte hain, baaki members documents manage kar sakte hain.</p>
+              <p className="mt-3 text-slate-600">Admins can add or remove members, while the rest of the family can manage documents.</p>
             </div>
             <div className="rounded-[28px] bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
               <p className="text-sm font-semibold uppercase tracking-[0.24em] text-blue-600">Instant Access</p>
               <h3 className="mt-3 text-2xl font-bold">View and download fast</h3>
-              <p className="mt-3 text-slate-600">Document library se directly dekhna, download karna aur organize karna easy hai.</p>
+              <p className="mt-3 text-slate-600">View, download, and organize files quickly from one document library.</p>
             </div>
           </div>
         </section>
@@ -151,7 +151,7 @@ function Home() {
               Build your family vault today.
             </h2>
             <p className="mx-auto mt-4 max-w-2xl text-slate-300">
-              Ek professional workspace jahan documents safe bhi rahen aur easily accessible bhi.
+              A professional workspace where your documents stay secure and easy to access.
             </p>
             <button
               onClick={() => navigate("/register")}

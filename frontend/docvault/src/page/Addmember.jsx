@@ -57,7 +57,7 @@ function AddMember() {
               Invite a family member with one email.
             </h1>
             <p className="mt-4 max-w-xl text-base leading-7 text-slate-600">
-              Family ko organized rakho aur documents access ko simple banao. Bas member ka email add karo.
+              Keep your family organized and make document access simple by inviting members with email.
             </p>
 
             <div className="mt-8 grid gap-4 sm:grid-cols-2">
@@ -75,7 +75,7 @@ function AddMember() {
           <div className="rounded-[34px] border border-slate-200 bg-white p-8 shadow-[0_18px_50px_rgba(15,23,42,0.1)]">
             <h2 className="text-2xl font-bold text-slate-900">Family Invite</h2>
             <p className="mt-2 text-sm text-slate-500">
-              Invite bhejne ke liye member ka registered email enter karein.
+              Enter the member's registered email address to send an invite.
             </p>
 
             <div className="mt-8 space-y-5">
