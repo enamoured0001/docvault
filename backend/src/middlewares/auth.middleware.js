@@ -8,8 +8,8 @@
  
  const jwtverify = asyncHandler(async (req, res, next) => {
     try {
-
-    const token= req.cookies?.accessToken || req.authorization?.replace("Bearer ", "");
+    const authHeader = req.header("Authorization");
+    const token = req.cookies?.accessToken || authHeader?.replace("Bearer ", "");
     if(!token){
         throw new ApiError(401, "Access token is missing");
     }
@@ -22,6 +22,9 @@
     next();
         
     } catch (error) {
+        if (error instanceof ApiError) {
+            throw error;
+        }
         console.error("JWT verification error:", error);
         throw new ApiError(401, "Invalid access token");
     }

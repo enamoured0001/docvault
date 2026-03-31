@@ -9,6 +9,14 @@ const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/;
 const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d).{6,}$/;
 
+const isProduction = process.env.NODE_ENV === "production";
+
+const cookieOptions = {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
+};
+
 const validateEmail = (email) => {
     if (!emailRegex.test(email)) {
         throw new ApiError(400, "Enter a valid email address");
@@ -132,16 +140,9 @@ const loginuser = asyncHandler(async (req, res) => {
     const loggedinuser= await User.findById(user._id).select("-password -refreshToken");
 
 
-  const options = {
-  httpOnly: true,
-  secure: true,
-  sameSite: "none",
-};
-
-
      return res.status(200)
-     .cookie("accessToken", accesstoken, options)
-     .cookie("refreshToken", refreshtoken, options)
+     .cookie("accessToken", accesstoken, cookieOptions)
+     .cookie("refreshToken", refreshtoken, cookieOptions)
      .json(
         apiResponse(res, 200, "User logged in successfully", {
             user: loggedinuser,
@@ -162,12 +163,8 @@ const logoutuser = asyncHandler(async (req, res) => {
     }
     user.refreshToken = null;
     await user.save({ validateBeforeSave: false });
-    const options = {
-        httponly: true,
-        secure: true,
-    };
-    res.clearCookie("accessToken", options); 
-    res.clearCookie("refreshToken", options);
+    res.clearCookie("accessToken", cookieOptions); 
+    res.clearCookie("refreshToken", cookieOptions);
     return res.status(200).json(
         apiResponse(res, 200, "User logged out successfully")
     );
@@ -191,15 +188,11 @@ const updatedrefreshtoken= asyncHandler(async(req,res)=>{
         throw new ApiError(401, "refresh token is expired")
     }
 
-     const options = {
-        httponly: true,
-        secure: true,};
-
          const { accesstoken, refreshtoken } = await generatetokens(user._id);
 
      return res.status(200)
-     .cookie("accessToken", accesstoken, options)
-     .cookie("refreshToken", refreshtoken, options)
+     .cookie("accessToken", accesstoken, cookieOptions)
+     .cookie("refreshToken", refreshtoken, cookieOptions)
      .json(
         apiResponse(res, 200, "User logged in successfully", {
             user: user,
