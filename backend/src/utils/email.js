@@ -1,4 +1,5 @@
 import nodemailer from "nodemailer";
+import dns from "dns/promises";
 
 const smtpHost = process.env.SMTP_HOST;
 const smtpPort = Number(process.env.SMTP_PORT || 587);
@@ -11,20 +12,52 @@ const hasSmtpConfig = Boolean(smtpHost && smtpPort && smtpUser && smtpPass && sm
 
 let transporter;
 
-const getTransporter = () => {
+const resolveSmtpHost = async () => {
+    if (!smtpHost) {
+        return { transportHost: smtpHost, tlsServerName: undefined };
+    }
+
+    try {
+        const ipv4Addresses = await dns.resolve4(smtpHost);
+
+        if (ipv4Addresses?.length) {
+            return {
+                transportHost: ipv4Addresses[0],
+                tlsServerName: smtpHost
+            };
+        }
+    } catch (error) {
+        console.warn(`IPv4 DNS lookup failed for ${smtpHost}: ${error.message}`);
+    }
+
+    return {
+        transportHost: smtpHost,
+        tlsServerName: undefined
+    };
+};
+
+const getTransporter = async () => {
     if (!hasSmtpConfig) {
         return null;
     }
 
     if (!transporter) {
+        const { transportHost, tlsServerName } = await resolveSmtpHost();
+
         transporter = nodemailer.createTransport({
-            host: smtpHost,
+            host: transportHost,
             port: smtpPort,
             secure: smtpSecure,
-            family: 4,
             connectionTimeout: 20000,
             greetingTimeout: 20000,
             socketTimeout: 30000,
+            ...(tlsServerName
+                ? {
+                    tls: {
+                        servername: tlsServerName
+                    }
+                }
+                : {}),
             auth: {
                 user: smtpUser,
                 pass: smtpPass
@@ -36,7 +69,7 @@ const getTransporter = () => {
 };
 
 export const sendVerificationOtpEmail = async ({ email, username, otp }) => {
-    const mailer = getTransporter();
+    const mailer = await getTransporter();
 
     if (!mailer) {
         console.warn(`SMTP is not configured. OTP for ${email}: ${otp}`);
