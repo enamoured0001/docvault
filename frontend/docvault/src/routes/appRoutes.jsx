@@ -7,6 +7,7 @@ import Register from "../page/Register";
 import Home from "../page/Home";
 import MemberDocuments from "../page/MemberDocuments";
 import Profile from "../page/Profile";
+import VerifyEmail from "../page/VerifyEmail";
 import ProtectedRoute from "./ProtectedRoute";
 
 function AppRoutes() {
@@ -22,6 +23,7 @@ function AppRoutes() {
         <Route path="/create-family" element={<ProtectedRoute><CreateFamily /></ProtectedRoute>} />
         <Route path="/add-member" element={<ProtectedRoute><AddMember /></ProtectedRoute>} />
         <Route path="/register" element={<Register />} />
+        <Route path="/verify-email" element={<VerifyEmail />} />
         <Route path="/" element={<Home />} />
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         <Route

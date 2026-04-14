@@ -30,6 +30,16 @@ export const loginUser = async (data) => {
   return response.data;
 };
 
+export const verifyEmailOtp = async (data) => {
+  const response = await axiosInstance.post("/users/verify-email", data);
+  return response.data;
+};
+
+export const resendVerificationOtp = async (data) => {
+  const response = await axiosInstance.post("/users/resend-verification-otp", data);
+  return response.data;
+};
+
 
 export const logoutUser = async () => {
   try {

@@ -4,9 +4,27 @@ import cookieParser from "cookie-parser";
 
 
 const app = exprees();
+const configuredOrigins = (process.env.CLIENT_URL || "http://localhost:5173")
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+
+const allowedOrigins = Array.from(
+    new Set([
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        ...configuredOrigins
+    ])
+);
 
 app.use(cors({
-    origin: process.env.CLIENT_URL || "http://localhost:3000",
+    origin: (origin, callback) => {
+        if (!origin || allowedOrigins.includes(origin)) {
+            return callback(null, true);
+        }
+
+        return callback(new Error(`CORS blocked for origin: ${origin}`));
+    },
     credentials: true
 }));
 app.use(exprees.json({limit: "16kb"}));
@@ -27,6 +45,15 @@ import documentRouter from "./routers/document.router.js";
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/families", familyRouter);
 app.use("/api/v1/documents", documentRouter);
+
+app.use((err, req, res, next) => {
+    const statusCode = err.statusCode || 500;
+
+    return res.status(statusCode).json({
+        success: false,
+        message: err.message || "Internal server error"
+    });
+});
 
 
 export default app;

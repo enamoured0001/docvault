@@ -63,8 +63,7 @@ function Register() {
 
       const data = await registerUser(formData);
       console.log(data);
-      alert("Registration successful");
-      navigate("/login");
+      navigate(`/verify-email?email=${encodeURIComponent(email.trim())}`);
 
     } catch (error) {
 

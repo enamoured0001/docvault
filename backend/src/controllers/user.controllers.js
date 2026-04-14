@@ -4,6 +4,8 @@ import {User} from "../models/user.model.js";
 import { uploadonCloudinary } from "../utils/cloudinary.js";
 import apiResponse from "../utils/apiresponse.js";
  import jwt from "jsonwebtoken";
+import crypto from "crypto";
+import { isSmtpConfigured, sendVerificationOtpEmail } from "../utils/email.js";
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/;
@@ -35,6 +37,44 @@ const validatePassword = (password) => {
     }
 };
 
+const buildVerificationResponse = (user) => ({
+    user: {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        avatar: user.avatar,
+        role: user.role,
+        isEmailVerified: user.isEmailVerified
+    },
+    emailVerificationRequired: !user.isEmailVerified
+});
+
+const sendEmailVerificationOtp = async (user) => {
+    const otp = user.generateEmailVerificationOTP();
+    await user.save({ validateBeforeSave: false });
+
+    const otpDelivered = await sendVerificationOtpEmail({
+        email: user.email,
+        username: user.username,
+        otp
+    });
+
+    if (!otpDelivered) {
+        throw new ApiError(503, "Unable to send OTP email right now. Please configure SMTP and try again.");
+    }
+};
+
+const findUserByEmailOrThrow = async (email) => {
+    const normalizedEmail = email.trim().toLowerCase();
+    validateEmail(normalizedEmail);
+
+    const user = await User.findOne({ email: normalizedEmail });
+    if (!user) {
+        throw new ApiError(404, "User not found");
+    }
+
+    return user;
+};
 
 
 
@@ -78,6 +118,10 @@ const registeruser = asyncHandler(async (req, res) => {
     validateEmail(normalizedEmail);
     validatePassword(password);
 
+    if (!isSmtpConfigured()) {
+        throw new ApiError(503, "Email service is not configured. Add SMTP settings in backend/.env to send OTP emails.");
+    }
+
     // Check if user already exists
     const existeduser = await User.findOne({$or: [{ email: normalizedEmail }, { username: normalizedUsername }]});
     if(existeduser){
@@ -105,15 +149,18 @@ const registeruser = asyncHandler(async (req, res) => {
         avatar: avatar.url
     });
 
-    const createduser = await User.findById(newuser._id).select("-password -refreshToken");
+    await sendEmailVerificationOtp(newuser);
+    const createduser = await User.findById(newuser._id).select("-password -refreshToken -emailVerificationOTP");
 
     if(!createduser){
         throw new ApiError(500, "Failed to create user");
     }
 
-    return res.status(201).json(
-        apiResponse(res, 201, "User registered successfully", createduser)
-    );
+    return res.status(201).json({
+        success: true,
+        message: "User registered successfully. Please verify your email with the OTP we sent.",
+        data: buildVerificationResponse(createduser)
+    });
 });
   
 
@@ -129,6 +176,10 @@ const loginuser = asyncHandler(async (req, res) => {
     const user = await User.findOne({ email: normalizedEmail });
     if(!user){
         throw new ApiError(404, "User not found");
+    }
+
+    if (user.isEmailVerified === false) {
+        throw new ApiError(403, "Please verify your email before logging in");
     }
 
    const ispasswordcorrect = await user.comparepassword(password);
@@ -263,8 +314,88 @@ const updateCurrentuser = asyncHandler(async (req, res) => {
     );
 });
 
+const verifyEmailOtp = asyncHandler(async (req, res) => {
+    const { email, otp } = req.body;
 
+    if (!email || !otp) {
+        throw new ApiError(400, "Email and OTP are required");
+    }
 
+    const user = await findUserByEmailOrThrow(email);
 
+    if (user.isEmailVerified) {
+        return res.status(200).json(
+            apiResponse(res, 200, "Email is already verified", {
+                email: user.email,
+                isEmailVerified: true
+            })
+        );
+    }
 
-export { registeruser, loginuser, logoutuser,updatedrefreshtoken,getCurrentuser, updateCurrentuser};
+    if (!user.emailVerificationOTP || !user.emailVerificationOTPExpiresAt) {
+        throw new ApiError(400, "No OTP found. Please request a new OTP");
+    }
+
+    if (user.emailVerificationOTPExpiresAt.getTime() < Date.now()) {
+        throw new ApiError(400, "OTP has expired. Please request a new OTP");
+    }
+
+    const otpHash = crypto.createHash("sha256").update(String(otp).trim()).digest("hex");
+    if (otpHash !== user.emailVerificationOTP) {
+        throw new ApiError(400, "Invalid OTP");
+    }
+
+    user.isEmailVerified = true;
+    user.emailVerificationOTP = undefined;
+    user.emailVerificationOTPExpiresAt = undefined;
+    await user.save({ validateBeforeSave: false });
+
+    return res.status(200).json(
+        apiResponse(res, 200, "Email verified successfully", {
+            email: user.email,
+            isEmailVerified: true
+        })
+    );
+});
+
+const resendEmailOtp = asyncHandler(async (req, res) => {
+    const { email } = req.body;
+
+    if (!email) {
+        throw new ApiError(400, "Email is required");
+    }
+
+    const user = await findUserByEmailOrThrow(email);
+
+    if (user.isEmailVerified) {
+        return res.status(200).json(
+            apiResponse(res, 200, "Email is already verified", {
+                email: user.email,
+                isEmailVerified: true
+            })
+        );
+    }
+
+    if (
+        user.emailVerificationLastSentAt &&
+        Date.now() - user.emailVerificationLastSentAt.getTime() < 60 * 1000
+    ) {
+        throw new ApiError(429, "Please wait 60 seconds before requesting another OTP");
+    }
+
+    if (!isSmtpConfigured()) {
+        throw new ApiError(503, "Email service is not configured. Add SMTP settings in backend/.env to send OTP emails.");
+    }
+
+    await sendEmailVerificationOtp(user);
+
+    return res.status(200).json({
+        success: true,
+        message: "A new OTP has been sent to your email",
+        data: {
+            email: user.email
+        }
+    });
+});
+
+export { registeruser, loginuser, logoutuser,updatedrefreshtoken,getCurrentuser, updateCurrentuser, verifyEmailOtp, resendEmailOtp};

@@ -1,6 +1,7 @@
 import mongoose,{ Schema } from 'mongoose';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 
 
 const userSchema = new Schema(
@@ -41,6 +42,19 @@ const userSchema = new Schema(
         },
         refreshToken: {
             type: String,
+        },
+        isEmailVerified: {
+            type: Boolean,
+            default: false
+        },
+        emailVerificationOTP: {
+            type: String
+        },
+        emailVerificationOTPExpiresAt: {
+            type: Date
+        },
+        emailVerificationLastSentAt: {
+            type: Date
         }
         
     },
@@ -79,6 +93,17 @@ userSchema.methods.generaterefreshtoken= function(){
         process.env.REFRESH_TOKEN_SECRET,
         { expiresIn: process.env.REFRESH_TOKEN_EXPIRES_IN }
     )
+}
+
+userSchema.methods.generateEmailVerificationOTP = function(){
+    const otp = `${Math.floor(100000 + Math.random() * 900000)}`;
+    const otpHash = crypto.createHash("sha256").update(otp).digest("hex");
+
+    this.emailVerificationOTP = otpHash;
+    this.emailVerificationOTPExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
+    this.emailVerificationLastSentAt = new Date();
+
+    return otp;
 }
 
 export const User = mongoose.model('User', userSchema);
