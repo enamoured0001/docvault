@@ -60,7 +60,7 @@ const sendEmailVerificationOtp = async (user) => {
     });
 
     if (!otpDelivered) {
-        throw new ApiError(503, "Unable to send OTP email right now. Please configure SMTP and try again.");
+        throw new ApiError(503, "Unable to send OTP email right now. Please configure the email service and try again.");
     }
 };
 
@@ -74,6 +74,10 @@ const findUserByEmailOrThrow = async (email) => {
     }
 
     return user;
+};
+
+const sanitizeUserForResponse = async (userId) => {
+    return User.findById(userId).select("-password -refreshToken -emailVerificationOTP");
 };
 
 
@@ -119,13 +123,22 @@ const registeruser = asyncHandler(async (req, res) => {
     validatePassword(password);
 
     if (!isSmtpConfigured()) {
-        throw new ApiError(503, "Email service is not configured. Add SMTP settings in backend/.env to send OTP emails.");
+        throw new ApiError(503, "Email service is not configured. Add Brevo API settings in backend/.env to send OTP emails.");
     }
 
-    // Check if user already exists
-    const existeduser = await User.findOne({$or: [{ email: normalizedEmail }, { username: normalizedUsername }]});
-    if(existeduser){
-        throw new ApiError(409, "User with this email or username already exists");
+    const existingEmailUser = await User.findOne({ email: normalizedEmail });
+    const existingUsernameUser = await User.findOne({ username: normalizedUsername });
+
+    const usernameBelongsToDifferentUser =
+        existingUsernameUser &&
+        (!existingEmailUser || existingUsernameUser._id.toString() !== existingEmailUser._id.toString());
+
+    if (existingEmailUser && existingEmailUser.isEmailVerified !== false) {
+        throw new ApiError(409, "Email is already registered");
+    }
+
+    if (usernameBelongsToDifferentUser) {
+        throw new ApiError(409, "Username is already registered");
     }
 
 
@@ -141,16 +154,43 @@ const registeruser = asyncHandler(async (req, res) => {
         throw new ApiError(500, "Failed to upload avatar");
     }
 
-    // Create new user
-    const newuser = await User.create({
-        username: normalizedUsername,
-        email: normalizedEmail,
-        password,
-        avatar: avatar.url
-    });
+    if (existingEmailUser && existingEmailUser.isEmailVerified === false) {
+        existingEmailUser.username = normalizedUsername;
+        existingEmailUser.password = password;
+        existingEmailUser.avatar = avatar.url;
 
-    await sendEmailVerificationOtp(newuser);
-    const createduser = await User.findById(newuser._id).select("-password -refreshToken -emailVerificationOTP");
+        await existingEmailUser.save();
+        await sendEmailVerificationOtp(existingEmailUser);
+
+        const updatedUnverifiedUser = await sanitizeUserForResponse(existingEmailUser._id);
+
+        return res.status(200).json({
+            success: true,
+            message: "Your account already exists but email is not verified. We sent a fresh OTP to your email.",
+            data: buildVerificationResponse(updatedUnverifiedUser)
+        });
+    }
+
+    let newuser;
+
+    try {
+        newuser = await User.create({
+            username: normalizedUsername,
+            email: normalizedEmail,
+            password,
+            avatar: avatar.url
+        });
+
+        await sendEmailVerificationOtp(newuser);
+    } catch (error) {
+        if (newuser?._id) {
+            await User.findByIdAndDelete(newuser._id);
+        }
+
+        throw error;
+    }
+
+    const createduser = await sanitizeUserForResponse(newuser._id);
 
     if(!createduser){
         throw new ApiError(500, "Failed to create user");
@@ -384,7 +424,7 @@ const resendEmailOtp = asyncHandler(async (req, res) => {
     }
 
     if (!isSmtpConfigured()) {
-        throw new ApiError(503, "Email service is not configured. Add SMTP settings in backend/.env to send OTP emails.");
+        throw new ApiError(503, "Email service is not configured. Add Brevo API settings in backend/.env to send OTP emails.");
     }
 
     await sendEmailVerificationOtp(user);
